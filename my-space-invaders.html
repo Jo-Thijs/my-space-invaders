@@ -1,0 +1,1064 @@
+<!DOCTYPE HTML>
+<HTML lang="en-US">
+  <HEAD>
+    <TITLE>My space invaders</TITLE>
+    <STYLE>
+      html {
+        color: white;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Times New Roman', Times, serif;
+        min-height: 100%;
+      }
+      body {
+        background: black;
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        margin: 0;
+        padding: 16px;
+      }
+      noscript {
+        background: orange;
+        color: black;
+        padding: 16px;
+      }
+      #game-container {
+        position: relative;
+      }
+      #game-field {
+        background: darkblue;
+        border-radius: 8px;
+        filter: blur(4px);
+        image-rendering: pixelated;
+        max-height: calc(100vh - 34px - 16px);
+        object-fit: contain;
+        padding: 4px;
+        width: calc(100% - 8px);
+      }
+      #game-container:focus #game-field {
+        filter: none;
+      }
+      #game-container:fullscreen #game-field {
+        border-radius: 0;
+        max-height: calc(100vh - 8px);
+      }
+      .game-char {
+        color: deeppink;
+        font-size: 16px;
+        font-weight: bold;
+        position: absolute;
+      }
+      .game-blood {
+        pointer-events: none;
+        position: absolute;
+        z-index: 1;
+      }
+      .game-blood svg {
+        animation: 10s ease-out blood-spill;
+        fill: maroon;
+        stroke: transparent;
+        pointer-events: fill;
+      }
+      @keyframes blood-spill {
+        0% {
+          transform: scale(0);
+          fill: red;
+        }
+        20% {
+          transform: scale(1);
+          fill: crimson;
+        }
+        100% {
+          fill: maroon;
+        }
+      }
+      #gesture-reference {
+        border: 4px solid blue;
+        border-radius: 50%;
+        display: none;
+        height: 64px;
+        opacity: 0.5;
+        position: fixed;
+        transform: translate(-50%, -50%);
+        width: 64px;
+      }
+      #game-bar {
+        display: flex;
+        border: 1px solid green;
+        border-radius: 4px;
+        gap: 4px;
+        justify-content: center;
+        padding: 4px;
+      }
+      #game-bar button {
+        background: transparent;
+        border: 1px solid white;
+        border-radius: 4px;
+        color: white;
+        display: block;
+        padding: 2px;
+      }
+      #game-bar button:active {
+        border-color: lightblue;
+        color: lightblue;
+      }
+      #game-bar svg {
+        display: block;
+        margin: auto;
+        width: 40px;
+      }
+      ul {
+        margin: 0;
+      }
+      #conditional {
+        display: none;
+      }
+      footer {
+        background: darkblue;
+        margin: -16px;
+        margin-top: auto;
+        padding: 16px;
+        text-align: center;
+      }
+      kbd {
+        background-color: lightgray;
+        border-radius: 4px;
+        color: black;
+        display: inline-block;
+        font-weight: bold;
+        padding: 2px 4px;
+      }
+      a {
+        color: cornflowerblue;
+      }
+      a:active {
+        color: darkseagreen;
+      }
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <NOSCRIPT>Enable JavaScript to play this game.</NOSCRIPT>
+    <DIV id="game-container" tabindex="0" role="application">
+      <CANVAS id="game-field" width="320" height="240" aria-label="The &quot;my space invaders&quot; game canvas.">
+        This is where you would play the game, but your browser seems to not be able to render it.
+      </CANVAS>
+    </DIV>
+    <DIV id="gesture-reference"></DIV>
+    <DIV id="game-bar">
+      <BUTTON id="game-button-fullscreen" type="button" title="Play game in fullscreen.">
+        Fullscreen
+        <SVG viewBox="0 0 20 16" stroke="currentColor" stroke-width="1" fill="transparent" aria-label="Fullscreen icon">
+          <PATH d="M1 7V5A4 4 0 0 1 5 1H9"></PATH>
+          <PATH d="M11 1H15A4 4 0 0 1 19 5V7"></PATH>
+          <PATH d="M19 9V11A4 4 0 0 1 15 15H11"></PATH>
+          <PATH d="M9 15H5A4 4 0 0 1 1 11V9"></PATH>
+          <PATH d="M3 6V3H6M3 3L6 6"></PATH>
+          <PATH d="M17 6V3H14M17 3L14 6"></PATH>
+          <PATH d="M17 10V13H14M17 13L14 10"></PATH>
+          <PATH d="M3 10V13H6M3 13L6 10"></PATH>
+          <PATH d="M9 6H11A2 2 0 0 1 11 10H9A2 2 0 0 1 9 6"></PATH>
+        </SVG>
+      </BUTTON>
+      <BUTTON id="game-button-restart" type="button" title="Restart the game.">
+        Restart
+        <SVG viewBox="0 0 20 16" aria-label="Restart icon">
+          <G  stroke="currentColor" stroke-width="1" fill="transparent">
+            <PATH d="M4 7A6 6 0 0 1 16 7"></PATH>
+            <PATH d="M16 9A6 6 0 0 1 4 9"></PATH>
+          </G>
+          <G stroke="transparent" fill="currentColor">
+            <PATH d="M16 7L13 4H19"></PATH>
+            <PATH d="M4 9L1 12H7"></PATH>
+          </G>
+        </SVG>
+      </BUTTON>
+    </DIV>
+    <H2>Controls</H2>
+    <P>You can play using a keyboard or using a touch screen.</P>
+    <P>
+      Keyboard:
+    </P>
+    <UL>
+      <LI>Left arrow key <KBD>&larr;</KBD>: Move to the left.</LI>
+      <LI>Right arrow key <KBD>&rarr;</KBD>: Move to the right.</LI>
+      <LI>Control key <KBD>Ctrl ^</KBD> or shift key <KBD>Shift &#x21E7;</KBD>: Shoot a rocket.</LI>
+      <LI><KBD>F</KBD>: Toggle fullscreen.</LI>
+      <LI><KBD>R</KBD>: Restart the game.</LI>
+      <LI>Click on stains to clean them up.</LI>
+    </UL>
+    <P>
+      Touch screen:
+    </P>
+    <UL>
+      <LI>Touch and hold the screen to summon the touch reference (blue circle).</LI>
+      <LI>Swipe (and hold) to the left of the touch reference: Move to the left.</LI>
+      <LI>Swipe (and hold) to the right of the touch reference: Move to the right.</LI>
+      <LI>Swipe (and hold) upwards above the touch reference: Shoot a rocket.</LI>
+    </UL>
+    <H2>Game description</H2>
+    <P>
+      A game based on the famous arcade game "<A href="https://en.wikipedia.org/wiki/Space_Invaders">Space invaders</A>".
+      Defend earth from an alien assault.
+      Shoot rockets from within your spaceship to eliminate the aliens before they reach earth or kill you.
+    </P>
+    <P id="conditional">
+      It looks like the aliens are holding secret intel.
+      Try to figure out what they're hiding!
+    </P>
+    <P></P>
+    <FOOTER>
+      &copy; 2023 Jo-Thijs Daelman (<a href="mailto:jo_thijs@msn.com">jo_thijs@msn.com</a>)
+    </FOOTER>
+    <!-- UTILS -->
+    <SCRIPT type="text/javascript">
+      function assert(check) {
+        const [value, valid] = check();
+        if (!valid) {
+          console.error(`Assertion failed on:`, value);
+          throw new Error("Assertion failed.");
+        }
+      }
+      function* upTo(nonInclusiveLimit) {
+        assert(() => [nonInclusiveLimit, typeof nonInclusiveLimit === 'number']);
+        for (let i = 0; i < nonInclusiveLimit; i++) {
+          yield i;
+        }
+      }
+      function clamp(x, min, max) {
+        assert(() => [x, typeof x === "number"]);
+        assert(() => [min, typeof min === "number"]);
+        assert(() => [max, typeof max === "number"]);
+        return Math.max(Math.min(x, max), min);
+      }
+      function isPoint(value) {
+        return typeof value === "object"
+          && value !== null
+          && typeof value.x === "number"
+          && typeof value.y === "number";
+      }
+      function isRect(value) {
+        return typeof value === "object"
+          && value !== null
+          && typeof value.minX === "number"
+          && typeof value.minY === "number"
+          && typeof value.maxX === "number"
+          && typeof value.maxY === "number";
+      }
+      function isPointInRect(point, rect) {
+        assert(() => [point, isPoint(point)]);
+        assert(() => [rect, isRect(rect)]);
+        return point.x <= rect.maxX
+          && point.x >= rect.minX
+          && point.y <= rect.maxY
+          && point.y >= rect.minY;
+      }
+      function rectsIntersection(...rects) {
+        assert(() => [rects, Array.isArray(rects)]);
+        assert(() => [rects, rects.every((rect) => isRect(rect))]);
+        const candidate = {
+          minX: Math.max(...rects.map((rect) => rect.minX)),
+          minY: Math.max(...rects.map((rect) => rect.minY)),
+          maxX: Math.min(...rects.map((rect) => rect.maxX)),
+          maxY: Math.min(...rects.map((rect) => rect.maxY)),
+        };
+        return candidate.minX <= candidate.maxX && candidate.minY <= candidate.maxY ? candidate : null;
+      }
+      function originDistance(point) {
+        assert(() => [point, isPoint(point)]);
+        return Math.sqrt(point.x * point.x + point.y * point.y);
+      }
+      function isPointToRender(value) {
+        return typeof value === "object"
+          && value !== null
+          && "x" in value
+          && "y" in value
+          && "primary" in value
+          && typeof value.x === "number"
+          && typeof value.y === "number"
+          && typeof value.primary === "boolean";
+      }
+      function isSprite(value) {
+        return Array.isArray(value) && value.every(isPointToRender);
+      }
+      function extendSpriteWithRightMirror(sprite) {
+        assert(() => [sprite, isSprite(sprite)]);
+        const rightX = Math.max(...sprite.map(({ x }) => x));
+        return [...sprite, ...sprite.map(({ x, y, primary }) => ({ x: rightX * 2 + 1 - x, y, primary }))];
+      }
+      function decodeSprite(offset, encoding) {
+        assert(() => [offset, typeof offset === "object" && offset !== null]);
+        assert(() => [offset.x, "x" in offset && typeof offset.x === "number"]);
+        assert(() => [offset.y, "y" in offset && typeof offset.y === "number"]);
+        assert(() => [encoding, typeof encoding === "string" && /^[#\/ \r\n]*$/.test(encoding)]);
+        const sprite = [];
+        let x = offset.x;
+        let y = offset.y;
+        for (const char of encoding) {
+          switch (char) {
+          case "\n": x = offset.x; y++; continue;
+          case "#": sprite.push({ x, y, primary: true }); break;
+          case "/": sprite.push({ x, y, primary: false }); break;
+          }
+          x++;
+        }
+        return sprite;
+      }
+      function renderPoints(ctx, points, targetX, targetY, options) {
+        assert(() => [ctx, ctx instanceof CanvasRenderingContext2D]);
+        assert(() => [points, isSprite(points)]);
+        assert(() => [targetX, typeof targetX === "number"]);
+        assert(() => [targetY, typeof targetY === "number"]);
+        assert(() => [options, ["undefined", "object"].includes(typeof options) && options !== null]);
+        assert(() => [options?.primaryColor, ["undefined", "string"].includes(typeof options?.primaryColor)]);
+        function strokeSameColoredPoints(primaryFilter) {
+          ctx.beginPath();
+          for (const { x, y, primary } of points) {
+            if (primary === primaryFilter) {
+              ctx.moveTo(targetX + x, targetY + y);
+              ctx.lineTo(targetX + x + 1, targetY + y + 1);
+            }
+          }
+          ctx.moveTo(0, 0);
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.strokeStyle = options?.primaryColor ?? "white";
+        strokeSameColoredPoints(true);
+        ctx.strokeStyle = "black";
+        strokeSameColoredPoints(false);
+      }
+      async function memEfficientAnimationFrameLoop(iteration) {
+        let terminate = false;
+        while (!terminate) {
+          await new Promise((resolve, reject) => {
+            requestAnimationFrame((...args) => {
+              try {
+                terminate = iteration(...args);
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            });
+          });
+        }
+      }
+    </SCRIPT>
+    <!-- GAME BAR BUTTONS -->
+    <SCRIPT type="text/javascript">
+      const gameFocusElement = document.getElementById("game-container");
+      // FULLSCREEN BUTTON
+      const fullscreenButton = document.getElementById("game-button-fullscreen");
+      const toggleFullscreen = () => {
+        if (document.fullscreen) {
+          document.exitFullscreen();
+        } else {
+          gameFocusElement.requestFullscreen({ navigationUI: "hide" });
+          gameFocusElement.focus();
+        }
+      };
+      fullscreenButton.addEventListener("click", toggleFullscreen);
+      gameFocusElement.addEventListener("keypress", (event) => {
+        if (event.key.toLowerCase() === 'f') {
+          toggleFullscreen();
+        }
+      });
+      // RESTART BUTTON
+      const restartButton = document.getElementById("game-button-restart");
+      const restartGame = () => {
+        runningGame.terminate()
+        runningGame = startGame();
+        gameFocusElement.focus();
+      };
+      restartButton.addEventListener("click", restartGame);
+      gameFocusElement.addEventListener("keypress", (event) => {
+        if (event.key.toLowerCase() === 'r') {
+          restartGame();
+        }
+      });
+    </SCRIPT>
+    <!-- SPRITES -->
+    <SCRIPT type="text/javascript">
+      gameSprites = {};
+      gameSprites.spaceshipIdle = extendSpriteWithRightMirror(decodeSprite({ x: -8, y: -8 }, [
+        /* "       #",
+        "  ##  ##",
+        " #/# ##/",
+        " #/###//",
+        " #/###//",
+        "  ######",
+        "  ######",
+        " #####/#",
+        " #####/#",
+        " ###/#/#",
+        " ##/###/",
+        "########",
+        "#/####",
+        " #/##",
+        "  #/#",
+        "   #", */
+        "       #",
+        "  ##  ##",
+        " #/# ##/",
+        " #/###//",
+        " #/###//",
+        "########",
+        "#####/#/",
+        "##//##/#",
+        " ##/##//",
+        " ##/##/#",
+        "  ###/#/",
+        " #######",
+        " #/####",
+        " #//##",
+        "  #//#",
+        "   ##",
+      ].join("\n")));
+      gameSprites.playerBullet = decodeSprite({ x: -1, y: 0 }, [
+        " #",
+        "#/#",
+        " #",
+        "# #",
+      ].join("\n"));
+      gameSprites.explosion = extendSpriteWithRightMirror(decodeSprite({ x: -5, y: -5 }, [
+        "    #",
+        "  /#/",
+        " /#/#",
+        " #/#/",
+        "#/#/#",
+        "/#/#/",
+        " /#/#",
+        " #/#/",
+        "  #/#",
+        "    /",
+      ].join("\n")));
+      gameSprites.fatAlienImg1 = extendSpriteWithRightMirror(decodeSprite({ x: -8, y: -8 }, [
+        "   #### ",
+        "  ##//##",
+        " #######",
+        " ##//##/",
+        "########",
+        "#####//#",
+        "#//#//##",
+        "########",
+        "######/#",
+        " #//#///",
+        " ######/",
+        "  ##//##",
+        "   #####",
+        "  #   ##",
+        " #   #  ",
+        " #  #   ",
+        "    #   ",
+      ].join("\n")));
+      gameSprites.fatAlienImg2 = extendSpriteWithRightMirror(decodeSprite({ x: -8, y: -8 }, [
+        "   #### ",
+        "  ##//##",
+        " #######",
+        " ##//##/",
+        "########",
+        "####///#",
+        "#//##/##",
+        "########",
+        "######/#",
+        " #//#///",
+        " #####//",
+        "  ##//#/",
+        "   #####",
+        " ##   ##",
+        "#   ##  ",
+        "   #    ",
+        "        ",
+      ].join("\n")));
+      gameSprites.inkAlienImg1 = extendSpriteWithRightMirror(decodeSprite({ x: -8, y: -8 }, [
+        "       #",
+        "      ##",
+        "     ###",
+        "     ##/",
+        "    ####",
+        "    ##/#",
+        "   ##/##",
+        "  #/##/#",
+        " ##/#//#",
+        " #/#####",
+        "  #/###/",
+        "   ### #",
+        " ## #  #",
+        "#  #  # ",
+        "#  #  # ",
+        "   #  # ",
+        "      # ",
+      ].join("\n")));
+      gameSprites.inkAlienImg2 = extendSpriteWithRightMirror(decodeSprite({ x: -8, y: -8 }, [
+        "       #",
+        "      ##",
+        "     ###",
+        "     ##/",
+        "    ####",
+        "    ##/#",
+        "   #####",
+        "  #/#//#",
+        " ##/##/#",
+        " #/#####",
+        "  #/###/",
+        " ####  #",
+        "#  #  # ",
+        "# #  #  ",
+        "  #  #  ",
+        "   # #  ",
+        "        ",
+      ].join("\n")));
+      gameSprites.alienBullet = decodeSprite({ x: -1, y: 0 }, [
+        " #",
+        "#",
+        "#",
+        " #",
+        " #",
+        "# ",
+      ].join("\n"));
+    </SCRIPT>
+    <!-- CONTROLS -->
+    <SCRIPT type="text/javascript">
+      const currentKeyConfig = {
+        left: false,
+        right: false,
+        action: false,
+      };
+      const previousKeyConfig = { ...currentKeyConfig };
+      const convertKey = (key) => {
+        switch (key) {
+        case "ArrowLeft": return "left";
+        case "ArrowRight": return "right";
+        case "Control": return "action";
+        case "Shift": return "action";
+        default: return null;
+        }
+      };
+      addEventListener("keydown", (event) => {
+        const key = convertKey(event.key);
+        if (key) {
+          currentKeyConfig[key] = true;
+        }
+      });
+      addEventListener("keyup", (event) => {
+        const key = convertKey(event.key);
+        if (key) {
+          currentKeyConfig[key] = false;
+        }
+      });
+      let touching = false;
+      let originPoint = { x: 0, y: 0 };
+      let currentPoint = { x: 0, y: 0 };
+      const gestureThreshold = 32;
+      const gestureReferenceElement = document.getElementById("gesture-reference");
+      document.getElementById("game-field").addEventListener("touchstart", (event) => {
+        touching = true;
+        originPoint = {
+          x: event.touches.item(0).clientX,
+          y: event.touches.item(0).clientY,
+        };
+        currentPoint = originPoint;
+        gestureReferenceElement.style.display = "block";
+        gestureReferenceElement.style.left = `${originPoint.x}px`;
+        gestureReferenceElement.style.top = `${originPoint.y}px`;
+      });
+      addEventListener("touchend", () => {
+        touching = false;
+        currentKeyConfig.left = false;
+        currentKeyConfig.right = false;
+        currentKeyConfig.action = false;
+        gestureReferenceElement.style.display = "none";
+      });
+      addEventListener("touchmove", (event) => {
+        if (!touching) {
+          return false;
+        }
+        currentPoint = {
+          x: event.touches.item(0).clientX,
+          y: event.touches.item(0).clientY,
+        };
+        const distance = originDistance({
+          x: currentPoint.x - originPoint.x,
+          y: currentPoint.y - originPoint.y,
+        });
+        originPoint = {
+          x: currentPoint.x - (currentPoint.x - originPoint.x) * (Math.min(distance, gestureThreshold * 2) / distance),
+          y: currentPoint.y - (currentPoint.y - originPoint.y) * (Math.min(distance, gestureThreshold * 2) / distance),
+        };
+        currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold;
+        currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold;
+        currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold;
+        gestureReferenceElement.style.left = `${originPoint.x}px`;
+        gestureReferenceElement.style.top = `${originPoint.y}px`;
+      });
+      function getFrameKeyConfig() {
+        const result = Object.fromEntries(
+          Object.keys(currentKeyConfig).map((key) => [key, {
+            pressed: currentKeyConfig[key] && !previousKeyConfig[key],
+            released: !currentKeyConfig[key] && previousKeyConfig[key],
+            down: currentKeyConfig[key],
+          }]),
+        );
+        Object.assign(previousKeyConfig, currentKeyConfig);
+        return result;
+      }
+    </SCRIPT>
+    <!-- GAMEPLAY -->
+    <SCRIPT type="text/javascript">
+      // CONFIG
+      const gameContainerElement = document.getElementById("game-container");
+      const gameFieldElement = document.getElementById("game-field");
+      const gameWidth = Number(gameFieldElement.width);
+      const gameHeight = Number(gameFieldElement.height);
+      const ctx = gameFieldElement.getContext("2d", {
+        alpha: false,
+      });
+      const targetFps = 20;
+      const playerSpeed = 2;
+      const playerBulletMaxCoolDown = 10;
+      const playerBulletSpeed = 6;
+      const maxAlienCoolDown = 5;
+      const alienSpace = 24;
+      const alienColCount = 12;
+      const alienSpeed = 2;
+      const alienDescentAmount = 12;
+      const alienProgressCycle = Math.floor((gameWidth - (alienSpace * (alienColCount - 1) + 16)) / alienSpeed);
+      const alienBulletSpeed = 8;
+      const alienShootChance = maxAlienCoolDown / (alienColCount * 80);
+      const messageEncoding = new Uint8Array([
+        32, 76, 101, 116, 39, 115, 32, 104,
+        97, 118, 101, 32, 102, 117, 110, 32,
+        116, 111, 103, 101, 116, 104, 101, 114,
+      ]);
+
+      // GAME FIELD ANCHORS
+      function anchorGameFieldElement(element, position, resizeCallback) {
+        assert(() => [element, element instanceof HTMLElement]);
+        assert(() => [position, isPoint(position)]);
+        assert(() => [resizeCallback, typeof resizeCallback === "function"]);
+        const resize = () => {
+          const width = gameFieldElement.offsetWidth - 8;
+          const height = gameFieldElement.offsetHeight - 8;
+          const scale = Math.min(width / gameWidth, height / gameHeight);
+          const centerOffset = {
+            x: (position.x - gameWidth / 2) * scale,
+            y: (position.y - gameHeight / 2) * scale,
+          };
+          resizeCallback({ scale, centerOffset });
+        }
+        const resizeObserver = new ResizeObserver(resize);
+        resize();
+        resizeObserver.observe(gameFieldElement);
+        gameContainerElement.appendChild(element);
+        const mutationObserver = new MutationObserver(() => {
+          if (!gameContainerElement.contains(element)) {
+            resizeObserver.disconnect();
+            mutationObserver.disconnect();
+          }
+        });
+        mutationObserver.observe(gameContainerElement, {
+          childList: true,
+        });
+      }
+
+      // PAUSE MECHANICS
+      let gamePaused = document.activeElement !== gameContainerElement;
+      gameContainerElement.addEventListener("focus", () => {
+        gamePaused = false;
+      });
+      gameContainerElement.addEventListener("blur", () => {
+        gamePaused = true;
+      });
+
+      // RUN GAME
+      function startGame() {
+        // CLEAN UP CHAR ANCHORS
+        document.querySelectorAll(".game-char").forEach((charElement) => {
+          charElement.parentElement.removeChild(charElement);
+        });
+
+        // STATE INITIALIZATION
+        let gameStarted = false;
+        let gameEnded = false;
+        let playerDied = false;
+        const explosionStates = [];
+        const playerBulletStates = [];
+        const alienBulletStates = [];
+        const alienStates = [...(function* () {
+          const message = new TextDecoder().decode(messageEncoding);
+          for (const col of upTo(alienColCount)) {
+            yield {
+              x: 8 + col * alienSpace + alienSpeed,
+              y: 12,
+              hp: 4,
+              type: "fat",
+              char: message[col],
+              get collisionRect() {
+                return {
+                  minX: this.x - 8,
+                  maxX: this.x + 8,
+                  minY: this.y - 8,
+                  maxY: this.y + 4,
+                };
+              },
+            };
+          }
+          for (const col of upTo(alienColCount)) {
+            yield {
+              x: 8 + col * alienSpace + alienSpeed,
+              y: 36,
+              hp: 4,
+              type: "ink",
+              char: message[col + alienColCount],
+              get collisionRect() {
+                return {
+                  minX: this.x - 7,
+                  maxX: this.x + 7,
+                  minY: this.y - 8,
+                  maxY: this.y + 2,
+                };
+              },
+            };
+          }
+        })()];
+        let playerX = Math.floor(gameWidth / 2);
+        const playerY = gameHeight - 12;
+        let playerBulletCoolDown = 0;
+        let playerBulletDirection = 1;
+        let alienProgress = 0;
+        let alienCoolDown = maxAlienCoolDown;
+
+        // BLOOD METHODS
+        const createBloodSpat = (position, baseDiameter) => {
+          assert(() => [position, isPoint(position)]);
+          assert(() => [baseDiameter, typeof baseDiameter === "number"]);
+          const containerElement = document.createElement("div");
+          containerElement.classList.add("game-blood");
+          const svgNs = "http://www.w3.org/2000/svg";
+          const svgElement = document.createElementNS(svgNs, "svg");
+          svgElement.setAttribute("viewBox", `0 0 ${baseDiameter} ${baseDiameter}`);
+          svgElement.setAttribute("width", baseDiameter);
+          svgElement.setAttribute("height", baseDiameter);
+          containerElement.appendChild(svgElement);
+          const circleElement = document.createElementNS(svgNs, "circle");
+          circleElement.setAttribute("cx", baseDiameter / 2);
+          circleElement.setAttribute("cy", baseDiameter / 2);
+          circleElement.setAttribute("r", baseDiameter / 2);
+          svgElement.appendChild(circleElement);
+          anchorGameFieldElement(containerElement, position, ({ scale, centerOffset }) => {
+            containerElement.style.transformOrigin = "center center";
+            containerElement.style.transform = `translate(-50%,-50%) scale(${scale})`;
+            containerElement.style.left = `calc(50% + (${centerOffset.x}px))`;
+            containerElement.style.top = `calc(50% + (${centerOffset.y}px))`;
+          });
+          let clicked = false;
+          circleElement.addEventListener("click", () => {
+            if (!clicked) {
+              clicked = true;
+              containerElement.animate([{ opacity: 1 }, { opacity: 0 }], {
+                duration: 500,
+                easing: "ease-out",
+              }).addEventListener("finish", () => {
+                gameContainerElement.removeChild(containerElement);
+              });
+            }
+          });
+        };
+
+        const createBloodSplatters = (origin, spatVector) => {
+          assert(() => [origin, isPoint(origin)]);
+          assert(() => [spatVector, isPoint(spatVector)]);
+          let diameter = 16;
+          let distance = Math.sqrt(spatVector.x * spatVector.x + spatVector.y * spatVector.y);
+          for (let i = 0; i < 6; i++) {
+            diameter *= Math.random() * 0.125 + 0.75;
+            distance *= Math.random() * 0.125 + 1.125;
+            const direction = Math.atan2(spatVector.y, spatVector.x) + (Math.random() - 0.5) * Math.PI * 0.125;
+            const position = {
+              x: origin.x + Math.cos(direction) * distance,
+              y: origin.y + Math.sin(direction) * distance,
+            };
+            createBloodSpat(position, diameter);
+          }
+        }
+
+        // PLAYER METHODS
+        const getPlayerCollisionRect = () => ({
+          minX: playerX - 8,
+          maxX: playerX + 8,
+          minY: playerY - 8,
+          maxY: playerY + 8,
+        });
+        const updatePlayer = (gameInput) => {
+          playerX = clamp(playerX + (gameInput.right.down - gameInput.left.down) * playerSpeed, 8, gameWidth - 8);
+          if (playerBulletCoolDown) {
+            playerBulletCoolDown--;
+          }
+          if (gameInput.action.pressed && playerBulletCoolDown === 0) {
+            playerBulletCoolDown = playerBulletMaxCoolDown;
+            playerBulletStates.push({
+              x: playerX + playerBulletDirection * 6,
+              y: playerY - 8,
+            });
+            playerBulletDirection = -playerBulletDirection;
+          }
+        };
+        const renderPlayer = () => {
+          renderPoints(ctx, gameSprites.spaceshipIdle, playerX, playerY, { primaryColor: playerDied ? "red" : undefined });
+        };
+
+        // EXPLOSION METHODS
+        const isExplosionState = (value) => {
+          return typeof value === "object"
+            && value !== null
+            && typeof value.x === "number"
+            && typeof value.y === "number"
+            && typeof value.lifetime === "number";
+        }
+        const deleteExplosion = (explosionState) => {
+          assert(() => [explosionState, isExplosionState(explosionState)]);
+          const index = explosionStates.indexOf(explosionState);
+          if (index >= 0) {
+            explosionStates.splice(index, 1);
+          }
+        };
+        const updateExplosion = (explosionState) => {
+          assert(() => [explosionState, isExplosionState(explosionState)]);
+          explosionState.lifetime--;
+          if (explosionState.lifetime === 0) {
+            deleteExplosion(explosionState);
+          }
+        };
+        const renderExplosion = (explosionState) => {
+          assert(() => [explosionState, isExplosionState(explosionState)]);
+          renderPoints(ctx, gameSprites.explosion, explosionState.x, explosionState.y);
+        };
+
+        // PLAYER BULLET METHODS
+        const isPlayerBulletState = (value) => {
+          return typeof value === "object"
+            && value !== null
+            && typeof value.x === "number"
+            && typeof value.y === "number";
+        }
+        const deletePlayerBullet = (bulletState) => {
+          assert(() => [bulletState, isPlayerBulletState(bulletState)]);
+          const index = playerBulletStates.indexOf(bulletState);
+          if (index >= 0) {
+            playerBulletStates.splice(index, 1);
+          }
+        };
+        const updatePlayerBullet = (bulletState) => {
+          assert(() => [bulletState, isPlayerBulletState(bulletState)]);
+          bulletState.y -= playerBulletSpeed;
+          if (bulletState.y < -8) {
+            deletePlayerBullet(bulletState);
+          }
+        };
+        const renderPlayerBullet = (bulletState) => {
+          assert(() => [bulletState, isPlayerBulletState(bulletState)]);
+          renderPoints(ctx, gameSprites.playerBullet, bulletState.x, bulletState.y);
+        };
+
+        // ALIEN METHODS
+        const isAlienState = (value) => {
+          return typeof value === "object"
+            && value !== null
+            && typeof value.x === "number"
+            && typeof value.y === "number"
+            && typeof value.hp === "number"
+            && ["fat", "ink"].includes(value.type)
+            && typeof value.char === "string"
+            && isRect(value.collisionRect);
+        }
+        const deleteAlien = (alienState) => {
+          assert(() => [alienState, isAlienState(alienState)]);
+          const index = alienStates.indexOf(alienState);
+          if (index >= 0) {
+            alienStates.splice(index, 1);
+            const charElement = document.createElement("div");
+            charElement.classList.add("game-char");
+            charElement.innerText = alienState.char;
+            anchorGameFieldElement(charElement, {
+              x: alienState.x,
+              y: alienState.y,
+            }, ({ scale, centerOffset }) => {
+              charElement.style.transformOrigin = "center center";
+              charElement.style.transform = `translate(-50%,-50%) scale(${scale})`;
+              charElement.style.left = `calc(50% + (${centerOffset.x}px))`;
+              charElement.style.top = `calc(50% + (${centerOffset.y}px))`;
+            });
+            const conditionalElement = document.getElementById("conditional");
+            if (conditional) {
+              conditional.style.display = "block";
+            }
+          }
+        };
+        const updateAlienForProgress = (alienState) => {
+          assert(() => [alienState, isAlienState(alienState)]);
+          const direction = Math.floor(alienProgress / alienProgressCycle) & 1 ? -1 : 1;
+          alienState.x += alienSpeed * direction;
+          if (alienProgress % alienProgressCycle === 0) {
+            alienState.y += alienDescentAmount;
+            if (alienState.y + 8 >= gameHeight) {
+              gameEnded = true;
+            }
+          }
+          if (Math.random() < alienShootChance) {
+            alienBulletStates.push({
+              x: alienState.x,
+              y: alienState.y + 8,
+            });
+          }
+        };
+        const handleAlienPlayerBulletCollisions = (alienState) => {
+          assert(() => [alienState, isAlienState(alienState)]);
+          for (bulletState of playerBulletStates) {
+            if (isPointInRect(
+              { x: bulletState.x, y: bulletState.y },
+              alienState.collisionRect,
+            )) {
+              deletePlayerBullet(bulletState);
+              explosionStates.push({
+                x: bulletState.x,
+                y: bulletState.y,
+                lifetime: 4,
+              });
+              alienState.hp--;
+              if (alienState.hp === 0) {
+                deleteAlien(alienState);
+              }
+            }
+          }
+        };
+        const handleAlienPlayerCollisions = (alienState) => {
+          assert(() => [alienState, isAlienState(alienState)]);
+            if (rectsIntersection(alienState.collisionRect, getPlayerCollisionRect()) !== null) {
+              gameEnded = true;
+              playerDied = true;
+              const direction = Math.atan2(playerY - alienState.y, playerX - alienState.x);
+              createBloodSplatters({
+                x: playerX,
+                y: playerY,
+              }, {
+                x: Math.cos(direction) * 8,
+                y: Math.sin(direction) * 8,
+              });
+            }
+        };
+        const updateAliens = () => {
+          alienCoolDown--;
+          if (alienCoolDown === 0) {
+            alienProgress++;
+            alienCoolDown = maxAlienCoolDown;
+            for (const alienState of alienStates) {
+              updateAlienForProgress(alienState);
+            }
+          }
+          for (const alienState of alienStates) {
+            handleAlienPlayerBulletCollisions(alienState);
+          }
+          for (const alienState of alienStates) {
+            handleAlienPlayerCollisions(alienState);
+          }
+        };
+        const renderAlien = (alienState) => {
+          assert(() => [alienState, isAlienState(alienState)]);
+          const animation = {
+            fat: [gameSprites.fatAlienImg1, gameSprites.fatAlienImg2],
+            ink: [gameSprites.inkAlienImg1, gameSprites.inkAlienImg2],
+          }[alienState.type];
+          renderPoints(ctx, animation[alienProgress & 1], alienState.x, alienState.y);
+        };
+
+        // ALIEN BULLET METHODS
+        const isAlienBulletState = (value) => {
+          return typeof value === "object"
+            && value !== null
+            && typeof value.x === "number"
+            && typeof value.y === "number";
+        }
+        const deleteAlienBullet = (bulletState) => {
+          assert(() => [bulletState, isAlienBulletState(bulletState)]);
+          const index = playerBulletStates.indexOf(bulletState);
+          if (index >= 0) {
+            playerBulletStates.splice(index, 1);
+          }
+        };
+        const updateAlienBullet = (bulletState) => {
+          assert(() => [bulletState, isAlienBulletState(bulletState)]);
+          bulletState.y += alienBulletSpeed;
+          if (bulletState.y >= gameHeight + 8) {
+            deleteAlienBullet(bulletState);
+          }
+          if (isPointInRect({
+            x: bulletState.x,
+            y: bulletState.y,
+          }, getPlayerCollisionRect())) {
+            gameEnded = true;
+            playerDied = true;
+            createBloodSplatters({ x: bulletState.x, y: bulletState.y }, { x: 0, y: 12 });
+          }
+        };
+        const renderAlienBullet = (bulletState) => {
+          assert(() => [bulletState, isAlienBulletState(bulletState)]);
+          renderPoints(ctx, gameSprites.alienBullet, bulletState.x, bulletState.y);
+        };
+
+        // GAME LOOP
+        let previousFrameTimestamp = Date.now();
+        const gameIteration = () => {
+          const newFrameTimestamp = Date.now();
+          const frameLapseMs = newFrameTimestamp - previousFrameTimestamp;
+          if (frameLapseMs >= 1000 / targetFps) {
+            previousFrameTimestamp = newFrameTimestamp;
+            if (!gamePaused) {
+              const gameInput = getFrameKeyConfig();
+              if (gameInput.action.pressed || gameInput.left.pressed || gameInput.right.pressed) {
+                gameStarted = true;
+              }
+              if (gameStarted) {
+                updatePlayer(gameInput);
+                updateAliens();
+                for (const bulletState of playerBulletStates) {
+                  updatePlayerBullet(bulletState);
+                }
+                for (const bulletState of alienBulletStates) {
+                  updateAlienBullet(bulletState);
+                }
+                for (const explosionState of explosionStates) {
+                  updateExplosion(explosionState);
+                }
+              }
+            }
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, gameWidth, gameHeight);
+            renderPlayer();
+            for (const alienState of alienStates) {
+              renderAlien(alienState);
+            }
+            for (const bulletState of playerBulletStates) {
+              renderPlayerBullet(bulletState);
+            }
+            for (const bulletState of alienBulletStates) {
+              renderAlienBullet(bulletState);
+            }
+            for (const explosionState of explosionStates) {
+              renderExplosion(explosionState);
+            }
+          }
+          return gameEnded;
+        };
+        const gameLoop = memEfficientAnimationFrameLoop(gameIteration);
+        return {
+          async terminate() {
+            gameEnded = true;
+            return gameLoop;
+          }
+        };
+      };
+      runningGame = startGame();
+    </SCRIPT>
+    <!-- $2a$12$Qok7rtDMAz/N2YW4n1M8HOR1g2mwiD1iqELhrbN170f5RUKnZJOZu -->
+  </BODY>
+</HTML>
