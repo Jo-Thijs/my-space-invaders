@@ -264,10 +264,6 @@
         };
         return candidate.minX <= candidate.maxX && candidate.minY <= candidate.maxY ? candidate : null;
       }
-      function originDistance(point) {
-        assert(() => [point, isPoint(point)]);
-        return Math.sqrt(point.x * point.x + point.y * point.y);
-      }
       function isPointToRender(value) {
         return typeof value === "object"
           && value !== null
@@ -583,13 +579,9 @@
           x: event.touches.item(0).clientX,
           y: event.touches.item(0).clientY,
         };
-        const distance = originDistance({
-          x: currentPoint.x - originPoint.x,
-          y: currentPoint.y - originPoint.y,
-        });
         originPoint = {
-          x: currentPoint.x - (currentPoint.x - originPoint.x) * (Math.min(distance, gestureThreshold * 2) / distance),
-          y: currentPoint.y - (currentPoint.y - originPoint.y) * (Math.min(distance, gestureThreshold * 2) / distance),
+          x: clamp(originPoint.x, currentPoint.x - gestureThreshold * 2, currentPoint.x + gestureThreshold * 2),
+          y: clamp(originPoint.y, currentPoint.y - gestureThreshold * 2, currentPoint.y + gestureThreshold * 2),
         };
         currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold;
         currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold;
