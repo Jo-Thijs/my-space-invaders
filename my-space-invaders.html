@@ -519,6 +519,7 @@
     </SCRIPT>
     <!-- CONTROLS -->
     <SCRIPT type="text/javascript">
+      const controlTargetElement = document.getElementById("game-field");
       const currentKeyConfig = {
         left: false,
         right: false,
@@ -534,11 +535,12 @@
         default: return null;
         }
       };
-      addEventListener("keydown", (event) => {
+      controlTargetElement.addEventListener("keydown", (event) => {
         const key = convertKey(event.key);
         if (key) {
           currentKeyConfig[key] = true;
         }
+        event.preventDefault();
       });
       addEventListener("keyup", (event) => {
         const key = convertKey(event.key);
@@ -551,7 +553,10 @@
       let currentPoint = { x: 0, y: 0 };
       const gestureThreshold = 32;
       const gestureReferenceElement = document.getElementById("gesture-reference");
-      document.getElementById("game-field").addEventListener("touchstart", (event) => {
+      controlTargetElement.addEventListener("touchstart", (event) => {
+        if (gamePaused) {
+          return;
+        }
         touching = true;
         originPoint = {
           x: event.touches.item(0).clientX,
@@ -561,6 +566,7 @@
         gestureReferenceElement.style.display = "block";
         gestureReferenceElement.style.left = `${originPoint.x}px`;
         gestureReferenceElement.style.top = `${originPoint.y}px`;
+        event.preventDefault();
       });
       addEventListener("touchend", () => {
         touching = false;
@@ -590,6 +596,7 @@
         currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold;
         gestureReferenceElement.style.left = `${originPoint.x}px`;
         gestureReferenceElement.style.top = `${originPoint.y}px`;
+        event.preventDefault();
       });
       function getFrameKeyConfig() {
         const result = Object.fromEntries(
