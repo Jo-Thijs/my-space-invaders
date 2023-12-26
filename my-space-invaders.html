@@ -515,7 +515,6 @@
     </SCRIPT>
     <!-- CONTROLS -->
     <SCRIPT type="text/javascript">
-      const controlTargetElement = document.getElementById("game-field");
       const currentKeyConfig = {
         left: false,
         right: false,
@@ -531,7 +530,7 @@
         default: return null;
         }
       };
-      controlTargetElement.addEventListener("keydown", (event) => {
+      document.getElementById("game-container").addEventListener("keydown", (event) => {
         const key = convertKey(event.key);
         if (key) {
           currentKeyConfig[key] = true;
@@ -549,7 +548,7 @@
       let currentPoint = { x: 0, y: 0 };
       const gestureThreshold = 32;
       const gestureReferenceElement = document.getElementById("gesture-reference");
-      controlTargetElement.addEventListener("touchstart", (event) => {
+      document.getElementById("game-field").addEventListener("touchstart", (event) => {
         if (gamePaused) {
           return;
         }
