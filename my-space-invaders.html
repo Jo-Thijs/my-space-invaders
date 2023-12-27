@@ -339,6 +339,14 @@
           });
         }
       }
+      function isIosSafari() {
+        // Stolen from https://stackoverflow.com/a/29696509
+        const ua = window.navigator.userAgent;
+        const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+        const webkit = !!ua.match(/WebKit/i);
+        const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
+        return iOSSafari;
+      }
     </SCRIPT>
     <!-- GAME BAR BUTTONS -->
     <SCRIPT type="text/javascript">
@@ -556,20 +564,37 @@
           return;
         }
         const relevantTouch = event.changedTouches.item(0);
-        if (
-          relevantTouch === null
-          || relevantTouch.screenX < 16
-          || relevantTouch.screenY < 16
-          || relevantTouch.screenX >= screen.width - 16
-          || relevantTouch.screenY >= screen.height - 16
-        ) {
-          return;
+
+        if (isIosSafari()) {
+          // Apple doesn't seem to have understood what screen coordinates are for touch objects, so we need a special approach.
+          if (
+            relevantTouch === null
+            || relevantTouch.screenX < visualViewport.offsetLeft + 32
+            || relevantTouch.screenY < visualViewport.offsetTop + 32
+            || relevantTouch.screenX >= visualViewport.offsetLeft + visualViewport.width - 32
+            || relevantTouch.screenY >= visualViewport.offsetTop + visualViewport.height - 32
+          ) {
+            return;
+          }
+        } else {
+          if (
+            relevantTouch === null
+            || relevantTouch.screenX < 16
+            || relevantTouch.screenY < 16
+            || relevantTouch.screenX >= screen.width - 16
+            || relevantTouch.screenY >= screen.height - 16
+          ) {
+            return;
+          }
         }
         touchingId = relevantTouch.identifier;
-        originPoint = {
-          x: relevantTouch.clientX,
-          y: relevantTouch.clientY,
-        };
+        originPoint = isIosSafari() ? {
+            x: relevantTouch.screenX,
+            y: relevantTouch.screenY,
+          } : {
+            x: relevantTouch.clientX,
+            y: relevantTouch.clientY,
+          };
         currentPoint = originPoint;
         gestureReferenceElement.style.display = "block";
         gestureReferenceElement.style.left = `${originPoint.x}px`;
@@ -600,7 +625,10 @@
           if (relevantTouch.identifier !== touchingId) {
             continue;
           }
-          currentPoint = {
+          currentPoint = isIosSafari() ? {
+            x: relevantTouch.screenX,
+            y: relevantTouch.screenY,
+          } : {
             x: relevantTouch.clientX,
             y: relevantTouch.clientY,
           };
