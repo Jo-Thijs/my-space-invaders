@@ -543,7 +543,7 @@
           currentKeyConfig[key] = false;
         }
       });
-      let touching = false;
+      let touchingId = null;
       let originPoint = { x: 0, y: 0 };
       let currentPoint = { x: 0, y: 0 };
       const gestureThreshold = 32;
@@ -552,10 +552,23 @@
         if (gamePaused) {
           return;
         }
-        touching = true;
+        if (touchingId !== null) {
+          return;
+        }
+        const relevantTouch = event.changedTouches.item(0);
+        if (
+          relevantTouch === null
+          || relevantTouch.screenX < 16
+          || relevantTouch.screenY < 16
+          || relevantTouch.screenX >= screen.width - 16
+          || relevantTouch.screenY >= screen.height - 16
+        ) {
+          return;
+        }
+        touchingId = relevantTouch.identifier;
         originPoint = {
-          x: event.touches.item(0).clientX,
-          y: event.touches.item(0).clientY,
+          x: relevantTouch.clientX,
+          y: relevantTouch.clientY,
         };
         currentPoint = originPoint;
         gestureReferenceElement.style.display = "block";
@@ -563,31 +576,45 @@
         gestureReferenceElement.style.top = `${originPoint.y}px`;
         event.preventDefault();
       });
-      addEventListener("touchend", () => {
-        touching = false;
-        currentKeyConfig.left = false;
-        currentKeyConfig.right = false;
-        currentKeyConfig.action = false;
-        gestureReferenceElement.style.display = "none";
+      addEventListener("touchend", (event) => {
+        if (touchingId === null) {
+          return;
+        }
+        for (let i = 0; i < event.changedTouches.length; i++) {
+          if (event.changedTouches.item(i).identifier !== touchingId) {
+            continue;
+          }
+          touchingId = null;
+          currentKeyConfig.left = false;
+          currentKeyConfig.right = false;
+          currentKeyConfig.action = false;
+          gestureReferenceElement.style.display = "none";
+        }
       });
       addEventListener("touchmove", (event) => {
-        if (!touching) {
-          return false;
+        if (touchingId === null) {
+          return;
         }
-        currentPoint = {
-          x: event.touches.item(0).clientX,
-          y: event.touches.item(0).clientY,
-        };
-        originPoint = {
-          x: clamp(originPoint.x, currentPoint.x - gestureThreshold * 2, currentPoint.x + gestureThreshold * 2),
-          y: clamp(originPoint.y, currentPoint.y - gestureThreshold * 2, currentPoint.y + gestureThreshold * 2),
-        };
-        currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold;
-        currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold;
-        currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold;
-        gestureReferenceElement.style.left = `${originPoint.x}px`;
-        gestureReferenceElement.style.top = `${originPoint.y}px`;
-        event.preventDefault();
+        for (let i = 0; i < event.changedTouches.length; i++) {
+          const relevantTouch = event.changedTouches.item(i);
+          if (relevantTouch.identifier !== touchingId) {
+            continue;
+          }
+          currentPoint = {
+            x: relevantTouch.clientX,
+            y: relevantTouch.clientY,
+          };
+          originPoint = {
+            x: clamp(originPoint.x, currentPoint.x - gestureThreshold * 2, currentPoint.x + gestureThreshold * 2),
+            y: clamp(originPoint.y, currentPoint.y - gestureThreshold * 2, currentPoint.y + gestureThreshold * 2),
+          };
+          currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold;
+          currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold;
+          currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold;
+          gestureReferenceElement.style.left = `${originPoint.x}px`;
+          gestureReferenceElement.style.top = `${originPoint.y}px`;
+          event.preventDefault();
+        }
       });
       function getFrameKeyConfig() {
         const result = Object.fromEntries(
