@@ -625,6 +625,7 @@
           if (relevantTouch.identifier !== touchingId) {
             continue;
           }
+          const scale = visualViewport.scale;
           currentPoint = isIosSafari() ? {
             x: relevantTouch.screenX,
             y: relevantTouch.screenY,
@@ -633,12 +634,12 @@
             y: relevantTouch.clientY,
           };
           originPoint = {
-            x: clamp(originPoint.x, currentPoint.x - gestureThreshold * 2, currentPoint.x + gestureThreshold * 2),
-            y: clamp(originPoint.y, currentPoint.y - gestureThreshold * 2, currentPoint.y + gestureThreshold * 2),
+            x: clamp(originPoint.x, currentPoint.x - gestureThreshold * 2 * scale, currentPoint.x + gestureThreshold * 2 * scale),
+            y: clamp(originPoint.y, currentPoint.y - gestureThreshold * 2 * scale, currentPoint.y + gestureThreshold * 2 * scale),
           };
-          currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold;
-          currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold;
-          currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold;
+          currentKeyConfig.right = currentPoint.x - originPoint.x >= gestureThreshold * scale;
+          currentKeyConfig.left = currentPoint.x - originPoint.x <= -gestureThreshold * scale;
+          currentKeyConfig.action = currentPoint.y - originPoint.y <= -gestureThreshold * scale;
           gestureReferenceElement.style.left = `${originPoint.x}px`;
           gestureReferenceElement.style.top = `${originPoint.y}px`;
           event.preventDefault();
