@@ -73,6 +73,58 @@
           fill: maroon;
         }
       }
+      #hidden-menu {
+        align-items: center;
+        display: none;
+        flex-direction: column;
+        left: 50%;
+        position: fixed;
+        top: 2px;
+        transform: translateX(-50%);
+        transform-origin: top center;
+      }
+      #hidden-menu-summoner {
+        background-color: black;
+        border: 1px solid white;
+        border-radius: 4px;
+        color: white;
+        margin: 0;
+        padding: 4px;
+        opacity: 0.5;
+        transition: opacity 0.3s ease-in;
+      }
+      #hidden-menu-summoner:active {
+        opacity: 1;
+      }
+      #hidden-menu-summoner svg {
+        display: block;
+      }
+      #hidden-menu-buttons {
+        background-color: black;
+        border: 1px solid green;
+        border-radius: 2px;
+        display: none;
+        gap: 4px;
+        justify-content: center;
+        padding: 1px;
+      }
+      #hidden-menu-buttons button {
+        background: transparent;
+        border: 1px solid white;
+        border-radius: 2px;
+        color: white;
+        display: block;
+        padding: 0;
+      }
+      #hidden-menu-buttons button:active {
+        border-color: lightblue;
+        color: lightblue;
+      }
+      #hidden-menu-buttons svg {
+        display: block;
+        margin: auto;
+        width: 40px;
+      }
       #gesture-reference {
         border: 4px solid blue;
         border-radius: 50%;
@@ -84,9 +136,9 @@
         width: 64px;
       }
       #game-bar {
-        display: flex;
         border: 1px solid green;
         border-radius: 4px;
+        display: flex;
         gap: 4px;
         justify-content: center;
         padding: 4px;
@@ -143,6 +195,48 @@
       <CANVAS id="game-field" width="320" height="240" aria-label="The &quot;my space invaders&quot; game canvas.">
         This is where you would play the game, but your browser seems to not be able to render it.
       </CANVAS>
+      <DIV id="hidden-menu">
+        <BUTTON id="hidden-menu-summoner" type="button">
+          <SVG viewBox="0 0 16 4" width="24" height="6" fill="currentColor" stroke="transparent">
+            <CIRCLE r="2" cx="2" cy="2"></CIRCLE>
+            <CIRCLE r="2" cx="8" cy="2"></CIRCLE>
+            <CIRCLE r="2" cx="14" cy="2"></CIRCLE>
+          </SVG>
+        </BUTTON>
+        <DIV id="hidden-menu-buttons">
+          <BUTTON id="hidden-fullscreen" type="button" title="Play game in fullscreen.">
+            <SVG viewBox="0 0 20 16" stroke="currentColor" stroke-width="1" fill="transparent" aria-label="Fullscreen icon">
+              <PATH d="M1 7V5A4 4 0 0 1 5 1H9"></PATH>
+              <PATH d="M11 1H15A4 4 0 0 1 19 5V7"></PATH>
+              <PATH d="M19 9V11A4 4 0 0 1 15 15H11"></PATH>
+              <PATH d="M9 15H5A4 4 0 0 1 1 11V9"></PATH>
+              <PATH d="M3 6V3H6M3 3L6 6"></PATH>
+              <PATH d="M17 6V3H14M17 3L14 6"></PATH>
+              <PATH d="M17 10V13H14M17 13L14 10"></PATH>
+              <PATH d="M3 10V13H6M3 13L6 10"></PATH>
+              <PATH d="M9 6H11A2 2 0 0 1 11 10H9A2 2 0 0 1 9 6"></PATH>
+            </SVG>
+          </BUTTON>
+          <BUTTON id="hidden-window-mode" type="button" title="Exit fullscreen.">
+            <SVG viewBox="0 0 20 16" stroke="currentColor" stroke-width="1" fill="transparent" aria-label="Fullscreen icon">
+              <PATH d="M3 1L17 15"></PATH>
+              <PATH d="M17 1L3 15"></PATH>
+            </SVG>
+          </BUTTON>
+          <BUTTON id="hidden-restart" type="button" title="Restart the game.">
+            <SVG viewBox="0 0 20 16" aria-label="Restart icon">
+              <G stroke="currentColor" stroke-width="1" fill="transparent">
+                <PATH d="M4 7A6 6 0 0 1 16 7"></PATH>
+                <PATH d="M16 9A6 6 0 0 1 4 9"></PATH>
+              </G>
+              <G stroke="transparent" fill="currentColor">
+                <PATH d="M16 7L13 4H19"></PATH>
+                <PATH d="M4 9L1 12H7"></PATH>
+              </G>
+            </SVG>
+          </BUTTON>
+        </DIV>
+      </DIV>
     </DIV>
     <DIV id="gesture-reference"></DIV>
     <DIV id="game-bar">
@@ -163,7 +257,7 @@
       <BUTTON id="game-button-restart" type="button" title="Restart the game.">
         Restart
         <SVG viewBox="0 0 20 16" aria-label="Restart icon">
-          <G  stroke="currentColor" stroke-width="1" fill="transparent">
+          <G stroke="currentColor" stroke-width="1" fill="transparent">
             <PATH d="M4 7A6 6 0 0 1 16 7"></PATH>
             <PATH d="M16 9A6 6 0 0 1 4 9"></PATH>
           </G>
@@ -380,6 +474,76 @@
           restartGame();
         }
       });
+    </SCRIPT>
+    <!-- HIDDEN MENU -->
+    <SCRIPT type="text/javascript">
+      const hiddenMenuContainerElement = document.getElementById("hidden-menu");
+      const summonerElement = document.getElementById("hidden-menu-summoner");
+      const hiddenMenuButtonsContainerElement = document.getElementById("hidden-menu-buttons");
+      const hiddenFullscreenButton = document.getElementById("hidden-fullscreen");
+      const hiddenWindowModeButton = document.getElementById("hidden-window-mode");
+      const hiddenRestartButton = document.getElementById("hidden-restart");
+      const hiddenMenuButtons = [hiddenFullscreenButton, hiddenWindowModeButton, hiddenRestartButton];
+      const hiddenMenuTargetElements = [
+        document.getElementById("game-container"),
+        summonerElement,
+      ];
+      for (const targetElement of hiddenMenuTargetElements) {
+        targetElement.addEventListener("focus", () => {
+          hiddenMenuContainerElement.style.display = "flex";
+          if (targetElement === summonerElement) {
+            summonerElement.style.opacity = 1;
+          }
+          if (targetElement.id === "game-container") {
+            summonerElement.style.opacity = null;
+            hiddenMenuButtonsContainerElement.style.display = null;
+          }
+        });
+        targetElement.addEventListener("blur", (event) => {
+          if (
+            !hiddenMenuTargetElements.includes(event.relatedTarget)
+            && !hiddenMenuButtons.includes(event.relatedTarget)
+          ) {
+            hiddenMenuContainerElement.style.display = null;
+          }
+          console.log(event.relatedTarget, summonerElement, hiddenMenuButtons)
+          if (
+            summonerElement !== event.relatedTarget
+            && !hiddenMenuButtons.includes(event.relatedTarget)
+          ) {
+            summonerElement.style.opacity = null;
+            hiddenMenuButtonsContainerElement.style.display = null;
+          }
+        });
+      }
+      const updateHiddenMenuTransform = () => {
+        const dx = clamp(visualViewport.offsetLeft, 0, document.documentElement.clientWidth - visualViewport.width) + visualViewport.width / 2 - document.documentElement.clientWidth / 2;
+        const dy = clamp(visualViewport.offsetTop, 0, document.documentElement.clientHeight - visualViewport.height);
+        hiddenMenuContainerElement.style.transform = `translateX(-50%) translate(${dx}px, ${dy}px) scale(${1 / visualViewport.scale})`;
+      }
+      visualViewport.addEventListener("resize", updateHiddenMenuTransform);
+      visualViewport.addEventListener("scroll", updateHiddenMenuTransform);
+      summonerElement.addEventListener("click", () => {
+        hiddenMenuButtonsContainerElement.style.display = "flex";
+      });
+      hiddenFullscreenButton.addEventListener("click", toggleFullscreen);
+      hiddenWindowModeButton.addEventListener("click", toggleFullscreen);
+      hiddenRestartButton.addEventListener("click", restartGame);
+      hiddenWindowModeButton.style.display = "none";
+      document.addEventListener("fullscreenchange", () => {
+        if (document.fullscreenElement === null) {
+          hiddenFullscreenButton.style.display = null;
+          hiddenWindowModeButton.style.display = "none";
+        } else {
+          hiddenFullscreenButton.style.display = "none";
+          hiddenWindowModeButton.style.display = null;
+        }
+      });
+      if (isIosSafari()) {
+        summonerElement.addEventListener("click", () => {
+          summonerElement.focus();
+        });
+      }
     </SCRIPT>
     <!-- SPRITES -->
     <SCRIPT type="text/javascript">
