@@ -441,6 +441,14 @@
         const iOSSafari = iOS && webkit && !ua.match(/CriOS/i);
         return iOSSafari;
       }
+      function delayOnIosSafari(callback) {
+        assert(() => [callback, typeof callback === "function"]);
+        if (isIosSafari()) {
+          setTimeout(callback, 0);
+        } else {
+          callback();
+        }
+      }
     </SCRIPT>
     <!-- GAME BAR BUTTONS -->
     <SCRIPT type="text/javascript">
@@ -466,7 +474,7 @@
       const restartGame = () => {
         runningGame.terminate()
         runningGame = startGame();
-        gameFocusElement.focus();
+        // gameFocusElement.focus();
       };
       restartButton.addEventListener("click", restartGame);
       gameFocusElement.addEventListener("keypress", (event) => {
@@ -495,8 +503,10 @@
             summonerElement.style.opacity = 1;
           }
           if (targetElement.id === "game-container") {
-            summonerElement.style.opacity = null;
-            hiddenMenuButtonsContainerElement.style.display = null;
+            delayOnIosSafari(() => {
+              summonerElement.style.opacity = null;
+              hiddenMenuButtonsContainerElement.style.display = null;
+            });
           }
         });
         targetElement.addEventListener("blur", (event) => {
@@ -504,15 +514,18 @@
             !hiddenMenuTargetElements.includes(event.relatedTarget)
             && !hiddenMenuButtons.includes(event.relatedTarget)
           ) {
-            hiddenMenuContainerElement.style.display = null;
+            delayOnIosSafari(() => {
+              hiddenMenuContainerElement.style.display = null;
+            });
           }
-          console.log(event.relatedTarget, summonerElement, hiddenMenuButtons)
           if (
             summonerElement !== event.relatedTarget
             && !hiddenMenuButtons.includes(event.relatedTarget)
           ) {
-            summonerElement.style.opacity = null;
-            hiddenMenuButtonsContainerElement.style.display = null;
+            delayOnIosSafari(() => {
+              summonerElement.style.opacity = null;
+              hiddenMenuButtonsContainerElement.style.display = null;
+            });
           }
         });
       }
