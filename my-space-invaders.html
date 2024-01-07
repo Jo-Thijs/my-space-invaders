@@ -461,8 +461,8 @@
           document.exitFullscreen();
         } else {
           gameFocusElement.requestFullscreen({ navigationUI: "hide" });
-          gameFocusElement.focus();
         }
+        gameFocusElement.focus();
       };
       fullscreenButton.addEventListener("click", toggleFullscreen);
       gameFocusElement.addEventListener("keypress", (event) => {
@@ -475,7 +475,7 @@
       const restartGame = () => {
         runningGame.terminate()
         runningGame = startGame();
-        // gameFocusElement.focus();
+        gameFocusElement.focus();
       };
       restartButton.addEventListener("click", restartGame);
       gameFocusElement.addEventListener("keypress", (event) => {
