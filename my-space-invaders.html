@@ -46,6 +46,7 @@
       }
       :root.ios-fullscreen #game-field {
         border-radius: 0;
+        flex: 1;
         height: calc(100% - 8px);
         max-height: none;
       }
@@ -198,8 +199,10 @@
       :root.ios-fullscreen body > :not(#game-container) {
         display: none !important;
       }
-      :root.ios-fullscreen body > #game-container {
+      :root.ios-fullscreen #game-container {
+        display: flex;
         flex: 1;
+        flex-direction: column;
       }
       :root.ios-fullscreen body {
         padding: 0;
