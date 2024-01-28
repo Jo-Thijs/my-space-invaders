@@ -47,8 +47,8 @@
       :root.ios-fullscreen #game-field {
         border-radius: 0;
         flex: 1;
-        height: calc(100% - 8px);
         max-height: none;
+        min-height: 0;
       }
       .game-char {
         color: deeppink;
@@ -203,10 +203,20 @@
         display: flex;
         flex: 1;
         flex-direction: column;
+        min-height: 0;
       }
       :root.ios-fullscreen body {
+        min-height: 0;
         padding: 0;
         touch-action: none;
+      }
+      :root.ios-fullscreen {
+        bottom: 0;
+        left: 0;
+        min-height: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
       }
       * {
         text-size-adjust: none;
