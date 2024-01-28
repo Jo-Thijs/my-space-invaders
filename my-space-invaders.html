@@ -44,6 +44,11 @@
         height: calc(100vh - 8px);
         max-height: none;
       }
+      :root.ios-fullscreen #game-container {
+        border-radius: 0;
+        height: calc(100vh - 8px);
+        max-height: none;
+      }
       .game-char {
         color: deeppink;
         font-size: 16px;
@@ -189,6 +194,12 @@
       }
       a:active {
         color: darkseagreen;
+      }
+      :root.ios-fullscreen body > :not(#game-container,#game-bar) {
+        display: none;
+      }
+      :root.ios-fullscreen body {
+        touch-action: none;
       }
     </STYLE>
   </HEAD>
@@ -459,12 +470,29 @@
       // FULLSCREEN BUTTON
       const fullscreenButton = document.getElementById("game-button-fullscreen");
       const toggleFullscreen = () => {
-        if (document.fullscreen) {
-          document.exitFullscreen();
+        if (isIosSafari()) {
+          const classes = document.rootElement.classList;
+          if (classes.contains("ios-fullscreen")) {
+            classes.remove("ios-fullscreen");
+            const metaElement = document.querySelector("head > meta[name=\"viewport\"]");
+            if (metaElement) {
+              document.head.removeChild(metaElement);
+            }
+          } else {
+            classes.add("ios-fullscreen");
+            const metaElement = document.createElement("meta");
+            metaElement.name = "viewport";
+            metaElement.content = "minimum-scale=1.0, maximum-scale=1.0, initial-scale=1.0";
+            document.head.appendChild(metaElement);
+          }
         } else {
-          gameFocusElement.requestFullscreen({ navigationUI: "hide" });
+          if (document.fullscreen) {
+            document.exitFullscreen();
+          } else {
+            gameFocusElement.requestFullscreen({ navigationUI: "hide" });
+          }
+          gameFocusElement.focus();
         }
-        gameFocusElement.focus();
       };
       fullscreenButton.addEventListener("click", toggleFullscreen);
       gameFocusElement.addEventListener("keypress", (event) => {
