@@ -310,7 +310,7 @@
     <UL>
       <LI>Left arrow key <KBD>&larr;</KBD>: Move to the left.</LI>
       <LI>Right arrow key <KBD>&rarr;</KBD>: Move to the right.</LI>
-      <LI>Control key <KBD>Ctrl ^</KBD> or shift key <KBD>Shift &#x21E7;</KBD>: Shoot a rocket.</LI>
+      <LI>Control key <KBD>Ctrl ^</KBD> or the S letter key <KBD>S</KBD>: Shoot a rocket.</LI>
       <LI><KBD>F</KBD>: Toggle fullscreen.</LI>
       <LI><KBD>R</KBD>: Restart the game.</LI>
       <LI>Click on stains to clean them up.</LI>
@@ -748,7 +748,7 @@
         case "ArrowLeft": return "left";
         case "ArrowRight": return "right";
         case "Control": return "action";
-        case "Shift": return "action";
+        case "S": case "s": return "action";
         default: return null;
         }
       };
