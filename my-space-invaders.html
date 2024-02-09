@@ -896,7 +896,11 @@
       const alienDescentAmount = 12;
       const alienProgressCycle = Math.floor((gameWidth - (alienSpace * (alienColCount - 1) + 16)) / alienSpeed);
       const alienBulletSpeed = 7;
-      const alienShootChance = maxAlienCoolDown / (alienColCount * 80);
+      const expectedAlienBulletsPerSecond = 0.5;
+      /**
+       * The odds of an individual alien shooting when the cooldown ended.
+       */
+      const alienShootChance = expectedAlienBulletsPerSecond * maxAlienCoolDown / (targetFps * alienColCount * 2)
       const messageEncoding = new Uint8Array([
         32, 76, 101, 116, 39, 115, 32, 104,
         97, 118, 101, 32, 102, 117, 110, 32,
