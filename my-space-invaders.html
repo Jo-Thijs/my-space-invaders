@@ -896,11 +896,8 @@
       const alienDescentAmount = 12;
       const alienProgressCycle = Math.floor((gameWidth - (alienSpace * (alienColCount - 1) + 16)) / alienSpeed);
       const alienBulletSpeed = 7;
-      const expectedAlienBulletsPerSecond = 0.5;
-      /**
-       * The odds of an individual alien shooting when the cooldown ended.
-       */
-      const alienShootChance = expectedAlienBulletsPerSecond * maxAlienCoolDown / (targetFps * alienColCount * 2)
+      const expectedAlienBulletsPerSecondOnTop = 2;
+      const expectedAlienBulletsPerSecondOnBottom = 0;
       const messageEncoding = new Uint8Array([
         32, 76, 101, 116, 39, 115, 32, 104,
         97, 118, 101, 32, 102, 117, 110, 32,
@@ -1003,6 +1000,7 @@
         let playerBulletDirection = 1;
         let alienProgress = 0;
         let alienCoolDown = maxAlienCoolDown;
+        let lowestAlienY = 0;
 
         // BLOOD METHODS
         const createBloodSpat = (position, baseDiameter) => {
@@ -1180,6 +1178,12 @@
               gameEnded = true;
             }
           }
+          if (alienState.y > lowestAlienY) {
+            lowestAlienY = alienState.y;
+          }
+          const lowestAlienPercentage = lowestAlienY / gameHeight;
+          const expectedAlienBulletsPerSecond = lowestAlienPercentage * (expectedAlienBulletsPerSecondOnBottom - expectedAlienBulletsPerSecondOnTop) + expectedAlienBulletsPerSecondOnTop;
+          const alienShootChance = expectedAlienBulletsPerSecond * maxAlienCoolDown / (targetFps * alienColCount * 2);
           if (Math.random() < alienShootChance) {
             alienBulletStates.push({
               x: alienState.x,
