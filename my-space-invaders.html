@@ -1175,6 +1175,15 @@
           if (alienProgress % alienProgressCycle === 0) {
             alienState.y += alienDescentAmount;
             if (alienState.y + 8 >= gameHeight) {
+              setTimeout(() => {
+                createBloodSplatters({
+                  x: alienState.x + (Math.random() - 0.5) * 6,
+                  y: gameHeight + 24,
+                }, {
+                  x: (Math.random() - 0.5) * 6,
+                  y: -24,
+                })
+              }, Math.random() * 500);
               gameEnded = true;
             }
           }
