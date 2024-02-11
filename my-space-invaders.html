@@ -143,6 +143,20 @@
         transform: translate(-50%, -50%);
         width: 64px;
       }
+      #victory-message {
+        background-color: #00000080;
+        color: green;
+        display: none;
+        font-size: 2rem;
+        font-weight: 600;
+        left: 50%;
+        max-width: 100%;
+        position: absolute;
+        text-align: center;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: max-content;
+      }
       #game-bar {
         border: 1px solid green;
         border-radius: 4px;
@@ -272,6 +286,7 @@
           </BUTTON>
         </DIV>
       </DIV>
+      <DIV id="victory-message">Alien attack subverted! Good job.</DIV>
       <DIV id="gesture-reference"></DIV>
     </DIV>
     <DIV id="game-bar">
@@ -950,6 +965,12 @@
           charElement.parentElement.removeChild(charElement);
         });
 
+        // CLEAN UP VICTORY MESSAGE
+        const victoryMessage = document.getElementById("victory-message");
+        if (victoryMessage) {
+          victoryMessage.style.display = null;
+        }
+
         // STATE INITIALIZATION
         let gameStarted = false;
         let gameEnded = false;
@@ -1165,6 +1186,12 @@
             const conditionalElement = document.getElementById("conditional");
             if (conditionalElement) {
               conditionalElement.style.display = "block";
+            }
+            if (alienStates.length === 0) {
+              const victoryMessage = document.getElementById("victory-message");
+              if (victoryMessage) {
+                victoryMessage.style.display = "block";
+              }
             }
           }
         };
