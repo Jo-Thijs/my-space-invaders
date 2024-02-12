@@ -856,7 +856,7 @@
           if (relevantTouch.identifier !== touchingId) {
             continue;
           }
-          const scale = visualViewport.scale;
+          const scale = 1 / visualViewport.scale;
           currentPoint = isIosSafari() ? {
             x: relevantTouch.screenX,
             y: relevantTouch.screenY,
