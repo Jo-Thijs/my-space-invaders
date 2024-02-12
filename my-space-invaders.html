@@ -887,9 +887,11 @@
         Object.assign(previousKeyConfig, currentKeyConfig);
         return result;
       }
-      visualViewport.addEventListener("resize", () => {
+      const updateGestureReferenceSize = () => {
         document.getElementById("gesture-reference").style.transform = `translate(-50%, -50%) scale(${1 / visualViewport.scale})`;
-      });
+      }
+      visualViewport.addEventListener("resize", updateGestureReferenceSize);
+      updateGestureReferenceSize();
     </SCRIPT>
     <!-- GAMEPLAY -->
     <SCRIPT type="text/javascript">
