@@ -182,6 +182,10 @@
         margin: auto;
         width: 40px;
       }
+      #gyro-error {
+        color: red;
+        display: none;
+      }
       ul {
         margin: 0;
       }
@@ -320,7 +324,7 @@
       </BUTTON>
     </DIV>
     <H2>Controls</H2>
-    <P>You can play using a keyboard or using a touch screen.</P>
+    <P>You can play using a keyboard or using a touch screen or using a gyroscope.</P>
     <P>
       Keyboard:
     </P>
@@ -336,10 +340,23 @@
       Touch screen:
     </P>
     <UL>
-      <LI>Touch and hold the screen to summon the touch reference (blue circle).</LI>
-      <LI>Swipe (and hold) to the left of the touch reference: Move to the left.</LI>
-      <LI>Swipe (and hold) to the right of the touch reference: Move to the right.</LI>
+      <LI>Touch and hold the game field (anywhere) to summon the touch reference (blue circle).</LI>
+      <LI>Using a screen in landscape orientation in fullscreen is recommended to maximise the space where you can touch the screen.</LI>
+      <LI>Swipe (and <B>hold</B>) to the left of the touch reference: Move to the left.</LI>
+      <LI>Swipe (and <B>hold</B>) to the right of the touch reference: Move to the right.</LI>
       <LI>Swipe (and hold) upwards above the touch reference: Shoot a rocket.</LI>
+      <LI>Note that the edges of the screen remain reserved for pan and zoom gestures, so the touch reference doesn't activate there. This provides an escape hatch when zoomed in too much on the game.</LI>
+      <LI>Also note that when the game is blurred, pan and zoom gestures are also enabled and when the game is active, a kebab menu button appears at the top of the screen. Opening this menu will blur the game.</LI>
+    </UL>
+    <P>
+      Gyroscope (tilting a mobile device):
+    </P>
+    <UL>
+      <LI>Tap this button to activate gyroscope controls (or disable them afterwards). This will disable touch screen controls. <BUTTON id="gyro-button" type="button">Activate gyroscope controls</BUTTON><DIV id="gyro-error"></DIV></DIV></LI>
+      <LI>Hold the device in front of you. Landscape orientation in fullscreen is recommended, but profile orientation and windowed mode are also supported. The device may stand upwards or may lay down with the screen facing upwards.</LI>
+      <LI>Move the ship to the left by tilting the device leftwards (moving the left side of the device closer towards the ground than the right side).</LI>
+      <LI>Move the ship to the right by tilting the device rightwards (moving the right side of the device closer towards the ground than the left side).</LI>
+      <LI>Tap the game field to shoot a rocket.</LI>
       <LI>Note that the edges of the screen remain reserved for pan and zoom gestures, so the touch reference doesn't activate there. This provides an escape hatch when zoomed in too much on the game.</LI>
       <LI>Also note that when the game is blurred, pan and zoom gestures are also enabled and when the game is active, a kebab menu button appears at the top of the screen. Opening this menu will blur the game.</LI>
     </UL>
@@ -782,12 +799,36 @@
           currentKeyConfig[key] = false;
         }
       });
+      let gyroEnabled = false;
       let touchingId = null;
       let originPoint = { x: 0, y: 0 };
       let currentPoint = { x: 0, y: 0 };
       const gestureThreshold = 32;
       const gestureReferenceElement = document.getElementById("gesture-reference");
+      const isTouchAtEdge = (touch) => {
+        if (isIosSafari()) {
+          // Apple doesn't seem to have understood what screen coordinates are for touch objects, so we need a special approach.
+          return (
+            touch === null
+            || touch.screenX < visualViewport.offsetLeft + 32
+            || touch.screenY < visualViewport.offsetTop + 32
+            || touch.screenX >= visualViewport.offsetLeft + visualViewport.width - 32
+            || touch.screenY >= visualViewport.offsetTop + visualViewport.height - 32
+          );
+        } else {
+          return (
+            touch === null
+            || touch.screenX < 16
+            || touch.screenY < 16
+            || touch.screenX >= screen.width - 16
+            || touch.screenY >= screen.height - 16
+          );
+        }
+      };
       document.getElementById("game-field").addEventListener("touchstart", (event) => {
+        if (gyroEnabled) {
+          return;
+        }
         if (gamePaused) {
           return;
         }
@@ -796,27 +837,8 @@
         }
         const relevantTouch = event.changedTouches.item(0);
 
-        if (isIosSafari()) {
-          // Apple doesn't seem to have understood what screen coordinates are for touch objects, so we need a special approach.
-          if (
-            relevantTouch === null
-            || relevantTouch.screenX < visualViewport.offsetLeft + 32
-            || relevantTouch.screenY < visualViewport.offsetTop + 32
-            || relevantTouch.screenX >= visualViewport.offsetLeft + visualViewport.width - 32
-            || relevantTouch.screenY >= visualViewport.offsetTop + visualViewport.height - 32
-          ) {
-            return;
-          }
-        } else {
-          if (
-            relevantTouch === null
-            || relevantTouch.screenX < 16
-            || relevantTouch.screenY < 16
-            || relevantTouch.screenX >= screen.width - 16
-            || relevantTouch.screenY >= screen.height - 16
-          ) {
-            return;
-          }
+        if (isTouchAtEdge(relevantTouch)) {
+          return;
         }
         touchingId = relevantTouch.identifier;
         originPoint = isIosSafari() ? {
@@ -876,6 +898,72 @@
           event.preventDefault();
         }
       });
+      addEventListener("deviceorientation", (event) => {
+        if (!gyroEnabled) {
+          return;
+        }
+        const moveTilt = (() => {
+          switch (screen.orientation.type) {
+            case "landscape-primary": return event.beta * 2;
+            case "landscape-secondary": return -event.beta * 2;
+            case "portrait-primary": return event.gamma;
+            case "portrait-secondary": return -event.gamma;
+            default: return 0;
+          }
+        })();
+        currentKeyConfig.right = moveTilt > 30;
+        currentKeyConfig.left = moveTilt < -30;
+      });
+      document.getElementById("game-field").addEventListener("touchstart", (event) => {
+        if (!gyroEnabled) {
+          return;
+        }
+        if (gamePaused) {
+          return;
+        }
+        const relevantTouch = event.changedTouches.item(0);
+        if (isTouchAtEdge(relevantTouch)) {
+          return;
+        }
+        currentKeyConfig.action = true;
+        event.preventDefault();
+      });
+      addEventListener("touchend", (event) => {
+        if (!gyroEnabled) {
+          return;
+        }
+        if (currentKeyConfig.action) {
+          currentKeyConfig.action = false;
+        }
+      });
+      const gyroButton = document.getElementById("gyro-button");
+      const gyroError = document.getElementById("gyro-error");
+      if (gyroButton) {
+        gyroButton.addEventListener("click", async () => {
+          if (gyroError) {
+            gyroError.style.display = null;
+          }
+          if (!gyroEnabled) {
+            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+              try {
+                await DeviceOrientationEvent.requestPermission();
+              } catch (error) {
+                console.error('Could not activate gyroscope controls.', error);
+                if (gyroError) {
+                  gyroError.innerText = `${error}`;
+                  gyroError.style.display = "block";
+                }
+                return;
+              }
+            }
+            gyroEnabled = true;
+            gyroButton.innerText = "Disable gyroscope controls";
+          } else {
+            gyroEnabled = false;
+            gyroButton.innerText = "Enable gyroscope controls";
+          }
+        });
+      }
       function getFrameKeyConfig() {
         const result = Object.fromEntries(
           Object.keys(currentKeyConfig).map((key) => [key, {
