@@ -182,12 +182,29 @@
         margin: auto;
         width: 40px;
       }
+      ul {
+        margin: 0;
+      }
+      #gyro-button {
+        appearance: none;
+        background: white;
+        border: 4px solid darkblue;
+        border-radius: 4px;
+        color: block;
+        font-weight: bold;
+        margin: 0;
+        outline: none;
+        padding: 4px;
+      }
+      #gyro-button:hover, #gyro-button:focus-visible {
+        border-color: green;
+      }
+      #gyro-button:active {
+        border-color: darkseagreen;
+      }
       #gyro-error {
         color: red;
         display: none;
-      }
-      ul {
-        margin: 0;
       }
       #conditional {
         color: deeppink;
@@ -352,7 +369,7 @@
       Gyroscope (tilting a mobile device):
     </P>
     <UL>
-      <LI>Tap this button to activate gyroscope controls (or disable them afterwards). This will disable touch screen controls. <BUTTON id="gyro-button" type="button">Activate gyroscope controls</BUTTON><DIV id="gyro-error"></DIV></DIV></LI>
+      <LI>Tap this button to enable gyroscope controls (or disable them afterwards). This will disable touch screen controls. <BUTTON id="gyro-button" type="button">Enable gyroscope controls</BUTTON><DIV id="gyro-error"></DIV></DIV></LI>
       <LI>Hold the device in front of you. Landscape orientation in fullscreen is recommended, but profile orientation and windowed mode are also supported. The device may stand upwards or may lay down with the screen facing upwards.</LI>
       <LI>Move the ship to the left by tilting the device leftwards (moving the left side of the device closer towards the ground than the right side).</LI>
       <LI>Move the ship to the right by tilting the device rightwards (moving the right side of the device closer towards the ground than the left side).</LI>
