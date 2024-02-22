@@ -233,6 +233,19 @@
       a:active {
         color: darkseagreen;
       }
+      textarea {
+        resize: none;
+        width: 100%;
+      }
+      .hint-answers.hidden {
+        display: none;
+      }
+      .hint-history-question {
+        font-style: italic;
+      }
+      .hint-history-answer {
+        font-weight: 500;
+      }
       :root.ios-fullscreen body > :not(#game-container) {
         display: none !important;
       }
@@ -377,7 +390,7 @@
       <LI>Note that the edges of the screen remain reserved for pan and zoom gestures, so the touch reference doesn't activate there. This provides an escape hatch when zoomed in too much on the game.</LI>
       <LI>Also note that when the game is blurred, pan and zoom gestures are also enabled and when the game is active, a kebab menu button appears at the top of the screen. Opening this menu will blur the game.</LI>
     </UL>
-    <H2>Game description</H2>
+    <H2>Game description &amp; goal</H2>
     <P>
       A game based on the famous arcade game "<A href="https://en.wikipedia.org/wiki/Space_Invaders">Space invaders</A>".
       Defend earth from an alien assault.
@@ -387,6 +400,22 @@
       It looks like the aliens are holding secret intel.
       Try to figure out what they're hiding!
     </P>
+    <P>
+      If you're having difficulty figuring out what to do, you can get a hint by answering the following question:
+    </P>
+    <P id="hint-question">Loading question...</P>
+    <FORM id="hint-form">
+      <TEXTAREA name="Answer" required minlength="10" placeholder="Your answer." rows="4"></TEXTAREA>
+      <INPUT type="submit" value="Confirm answer">
+      <INPUT id="reset-hint-question" type="button" value="Different question please">
+    </FORM>
+    <P>
+      Consider sending your response to the author of this game &#128521.
+    </P>
+    <P class="hint-answers hidden">
+      Your earlier answers:
+    </P>
+    <UL class="hint-answers hidden"></UL>
     <P></P>
     <FOOTER>
       &copy; 2023 Jo-Thijs Daelman (<a href="mailto:jo_thijs@msn.com">jo_thijs@msn.com</a>)
@@ -536,6 +565,86 @@
           callback();
         }
       }
+    </SCRIPT>
+    <!-- HINT QUESTIONS -->
+    <SCRIPT type="text/javascript">
+      const hintQuestions = {
+        energy: "What is your source of energy or motivation?",
+        learn: "Given enough resources, what would you like to learn or experience first?",
+        proud: "What are your proudest achievements?",
+        description: "How would friends or family describe you?",
+        communities: "What communities or social groups most represent you or do you most enjoy interacting with?",
+        art: "What elements would an artwork about you (in an artform of your choice) need to include or focus on?",
+        laugh: "What are some specific examples that made you laugh recently?",
+      };
+      const getHintAnswers = () => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem("hint-answers") ?? "");
+          if (typeof parsed !== "object") {
+            return {};
+          }
+          return parsed;
+        } catch {
+          return {};
+        }
+      };
+      let hintKey = undefined;
+      const pickNewHintKey = () => {
+        const hintAnswers = getHintAnswers();
+        const remainingKeys = Object.keys(hintQuestions).filter((key) => !(key in hintAnswers));
+        const index = Math.floor(Math.random() * remainingKeys.length);
+        hintKey = remainingKeys[index];
+      };
+      pickNewHintKey();
+      const hintQuestionElement = document.getElementById("hint-question");
+      const hintFormElement = document.getElementById("hint-form");
+      const hintAnswerElements = document.getElementsByClassName("hint-answers");
+      const hintAnswerParagraph = hintAnswerElements.item(0);
+      const hintAnswerList = hintAnswerElements.item(1);
+      const updateHintUi = () => {
+        if (hintQuestionElement) {
+          hintQuestionElement.innerText = hintQuestions[hintKey];
+        }
+        if (hintAnswerParagraph && hintAnswerList) {
+          const hintAnswers = getHintAnswers();
+          const entries = Object.entries(hintAnswers);
+          if (entries.length > 0) {
+            hintAnswerParagraph.classList.remove("hidden");
+            hintAnswerList.classList.remove("hidden");
+          }
+          const existingItems = hintAnswerList.childNodes.forEach((child) => {
+            hintAnswerList.removeChild(child);
+          });
+          entries.forEach(([key, value]) => {
+            const newItem = document.createElement("li");
+            const header = document.createElement("P");
+            const body = document.createElement("P");
+            header.innerText = hintQuestions[key];
+            body.innerText = value;
+            header.classList.add("hint-history-question");
+            body.classList.add("hint-history-answer");
+            newItem.appendChild(header);
+            newItem.appendChild(body);
+            hintAnswerList.appendChild(newItem);
+          });
+        }
+      };
+      updateHintUi();
+      if (hintFormElement instanceof HTMLFormElement) {
+        hintFormElement.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const answer = new FormData(hintFormElement).get("Answer") ?? "";
+          localStorage.setItem("hint-answers", JSON.stringify({ ...getHintAnswers(), [hintKey]: answer }));
+          hintFormElement.reset();
+          pickNewHintKey();
+          updateHintUi();
+        });
+      }
+      document.getElementById("reset-hint-question").addEventListener("click", () => {
+        hintFormElement?.reset();
+        pickNewHintKey();
+        updateHintUi();
+      });
     </SCRIPT>
     <!-- GAME BAR BUTTONS -->
     <SCRIPT type="text/javascript">
@@ -961,7 +1070,7 @@
             gyroError.style.display = null;
           }
           if (!gyroEnabled) {
-            if (typeof DeviceOrientationEvent.requestPermission === "function") {
+            if (typeof DeviceOrientationEvent.requestPermission === "function" || true) {
               try {
                 await DeviceOrientationEvent.requestPermission();
               } catch (error) {
