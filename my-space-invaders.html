@@ -1178,6 +1178,12 @@
         }
       };
       document.getElementById("game-container").addEventListener("keydown", (event) => {
+        if (event.key.toLowerCase() === "r") {
+          restartGame();
+        }
+        if (event.key.toLowerCase() === "f") {
+          toggleFullscreen();
+        }
         const key = convertKey(event.key);
         if (key) {
           currentKeyConfig[key] = true;
