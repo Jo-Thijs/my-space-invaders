@@ -237,6 +237,12 @@
         resize: none;
         width: 100%;
       }
+      .revealed-hints {
+        color: deeppink;
+      }
+      .revealed-hints.hidden {
+        display: none;
+      }
       .hint-answers.hidden {
         display: none;
       }
@@ -400,7 +406,10 @@
       It looks like the aliens are holding secret intel.
       Try to figure out what they're hiding!
     </P>
-    <P>
+    <H2>Hints</H2>
+    <P class="revealed-hints hidden">Revealed hints:</P>
+    <UL class="revealed-hints hidden"></UL>
+    <P id="hint-explanation">
       If you're having difficulty figuring out what to do, you can get a hint by answering the following question:
     </P>
     <P id="hint-question">Loading question...</P>
@@ -577,6 +586,236 @@
         art: "What elements would an artwork about you (in an artform of your choice) need to include or focus on?",
         laugh: "What are some specific examples that made you laugh recently?",
       };
+      const hintSecret = [
+        new Int8Array([
+          84, 104, 101, 32, 103, 111,
+          97, 108, 32, 111, 102, 32,
+          116, 104, 101, 32, 103, 97,
+          109, 101, 32, 105, 115, 32,
+          110, 111, 116, 32, 116, 111,
+          32, 107, 105, 108, 108, 32,
+          97, 108, 108, 32, 97, 108,
+          105, 101, 110, 115, 44, 32,
+          98, 117, 116, 32, 116, 111,
+          32, 117, 110, 99, 111, 118,
+          101, 114, 32, 116, 104, 101,
+          32, 109, 101, 115, 115, 97,
+          103, 101, 32, 116, 104, 101,
+          121, 32, 103, 114, 97, 100,
+          117, 97, 108, 108, 121, 32,
+          114, 101, 118, 101, 97, 108,
+          32, 119, 104, 101, 110, 32,
+          107, 105, 108, 108, 101, 100,
+          46,
+        ]),
+        new Uint8Array([
+          84, 104, 105, 115, 32, 109,
+          101, 115, 115, 97, 103, 101,
+          32, 105, 115, 32, 97, 110,
+          32, 69, 110, 103, 108, 105,
+          115, 104, 32, 115, 101, 110,
+          116, 101, 110, 99, 101, 46,
+        ]),
+        new Uint8Array([
+          65, 110, 32, 97, 108, 105,
+          101, 110, 32, 105, 115, 32,
+          105, 100, 101, 110, 116, 105,
+          102, 105, 101, 100, 32, 98,
+          121, 32, 116, 104, 101, 105,
+          114, 32, 115, 116, 97, 114,
+          116, 105, 110, 103, 32, 112,
+          111, 115, 105, 116, 105, 111,
+          110, 46, 32, 75, 105, 108,
+          108, 105, 110, 103, 32, 116,
+          104, 101, 32, 115, 97, 109,
+          101, 32, 97, 108, 105, 101,
+          110, 32, 111, 118, 101, 114,
+          32, 50, 32, 103, 97, 109,
+          101, 115, 44, 32, 109, 97,
+          107, 101, 115, 32, 116, 104,
+          101, 109, 32, 100, 114, 111,
+          112, 32, 116, 104, 101, 32,
+          115, 97, 109, 101, 32, 99,
+          104, 97, 114, 97, 99, 116,
+          101, 114, 32, 97, 103, 97,
+          105, 110, 46,
+        ]),
+        new Uint8Array([
+          84, 104, 101, 32, 97, 108,
+          105, 101, 110, 115, 32, 99,
+          97, 114, 114, 121, 32, 99,
+          104, 97, 114, 97, 99, 116,
+          101, 114, 115, 32, 111, 102,
+          32, 116, 104, 101, 32, 115,
+          101, 110, 116, 101, 110, 99,
+          101, 32, 105, 110, 32, 116,
+          104, 101, 32, 111, 114, 100,
+          101, 114, 32, 116, 104, 101,
+          121, 32, 111, 99, 99, 117,
+          114, 32, 105, 110, 32, 116,
+          104, 101, 32, 115, 101, 110,
+          116, 101, 110, 99, 101, 46,
+          32, 83, 111, 32, 116, 104,
+          101, 32, 102, 105, 114, 115,
+          116, 32, 97, 108, 105, 101,
+          110, 32, 105, 110, 32, 116,
+          104, 101, 32, 116, 111, 112,
+          32, 114, 111, 119, 44, 32,
+          99, 97, 114, 114, 105, 101,
+          115, 32, 116, 104, 101, 32,
+          102, 105, 114, 115, 116, 32,
+          99, 104, 97, 114, 97, 99,
+          116, 101, 114, 32, 111, 102,
+          32, 116, 104, 101, 32, 115,
+          101, 110, 116, 101, 110, 99,
+          101, 46, 32, 84, 104, 101,
+          32, 102, 105, 110, 97, 108,
+          32, 97, 108, 105, 101, 110,
+          32, 111, 110, 32, 116, 104,
+          101, 32, 98, 111, 116, 116,
+          111, 109, 32, 114, 111, 119,
+          32, 99, 97, 114, 114, 105,
+          101, 115, 32, 116, 104, 101,
+          32, 108, 97, 115, 116, 32,
+          99, 104, 97, 114, 97, 99,
+          116, 101, 114, 32, 111, 102,
+          32, 116, 104, 101, 32, 115,
+          101, 110, 116, 101, 110, 99,
+          101, 46, 32, 83, 112, 97,
+          99, 101, 115, 32, 105, 110,
+          32, 116, 104, 101, 32, 115,
+          101, 110, 116, 101, 110, 99,
+          101, 32, 97, 114, 101, 32,
+          97, 108, 115, 111, 32, 99,
+          97, 114, 114, 105, 101, 100,
+          32, 98, 121, 32, 97, 108,
+          105, 101, 110, 115, 44, 32,
+          115, 111, 32, 105, 116, 32,
+          119, 105, 108, 108, 32, 108,
+          111, 111, 107, 32, 108, 105,
+          107, 101, 32, 116, 104, 101,
+          121, 32, 100, 114, 111, 112,
+          32, 110, 111, 116, 104, 105,
+          110, 103, 46,
+        ]),
+        new Uint8Array([
+          65, 108, 105, 101, 110, 115,
+          32, 115, 104, 111, 111, 116,
+          32, 108, 101, 115, 115, 32,
+          102, 114, 101, 113, 117, 101,
+          110, 116, 108, 121, 32, 97,
+          115, 32, 116, 104, 101, 121,
+          32, 110, 101, 97, 114, 32,
+          101, 97, 114, 116, 104, 46,
+          32, 84, 104, 105, 115, 32,
+          109, 97, 107, 101, 115, 32,
+          105, 116, 32, 115, 97, 102,
+          101, 114, 32, 116, 111, 32,
+          117, 110, 108, 111, 97, 100,
+          32, 114, 111, 99, 107, 101,
+          116, 115, 32, 97, 116, 32,
+          116, 104, 101, 32, 102, 105,
+          110, 97, 108, 32, 102, 101,
+          119, 32, 97, 108, 105, 101,
+          110, 115, 32, 105, 110, 32,
+          116, 104, 101, 32, 102, 105,
+          110, 97, 108, 32, 115, 116,
+          114, 101, 116, 99, 104, 101,
+          115, 46, 32, 70, 117, 114,
+          116, 104, 101, 114, 109, 111,
+          114, 101, 44, 32, 121, 111,
+          117, 114, 32, 115, 112, 97,
+          99, 101, 115, 104, 105, 112,
+          32, 115, 104, 111, 111, 116,
+          115, 32, 114, 111, 99, 107,
+          101, 116, 115, 32, 102, 114,
+          111, 109, 32, 105, 116, 115,
+          32, 115, 105, 100, 101, 115,
+          44, 32, 98, 117, 116, 32,
+          97, 108, 105, 101, 110, 115,
+          32, 100, 111, 32, 115, 104,
+          111, 111, 116, 32, 112, 114,
+          111, 106, 101, 99, 116, 105,
+          108, 101, 115, 32, 102, 114,
+          111, 109, 32, 116, 104, 101,
+          32, 99, 101, 110, 116, 101,
+          114, 32, 111, 102, 32, 116,
+          104, 101, 105, 114, 32, 98,
+          111, 100, 105, 101, 115, 46,
+          32, 84, 104, 105, 115, 32,
+          109, 97, 107, 101, 115, 32,
+          105, 116, 32, 115, 111, 32,
+          121, 111, 117, 32, 99, 97,
+          110, 32, 107, 101, 101, 112,
+          32, 97, 108, 105, 101, 110,
+          115, 32, 105, 110, 32, 115,
+          104, 111, 111, 116, 105, 110,
+          103, 32, 114, 97, 110, 103,
+          101, 32, 119, 105, 116, 104,
+          111, 117, 116, 32, 102, 97,
+          108, 108, 105, 110, 103, 32,
+          105, 110, 116, 111, 32, 116,
+          104, 101, 32, 97, 108, 105,
+          101, 110, 115, 39, 115, 32,
+          115, 104, 111, 111, 116, 105,
+          110, 103, 32, 114, 97, 110,
+          103, 101, 46, 32, 84, 104,
+          105, 115, 32, 109, 105, 103,
+          104, 116, 32, 109, 97, 107,
+          101, 32, 121, 111, 117, 32,
+          109, 105, 115, 115, 32, 109,
+          111, 114, 101, 32, 98, 117,
+          108, 108, 101, 116, 115, 32,
+          97, 110, 100, 32, 114, 105,
+          115, 107, 32, 108, 111, 115,
+          105, 110, 103, 32, 116, 105,
+          109, 101, 32, 104, 111, 119,
+          101, 118, 101, 114, 46,
+        ]),
+        new Uint8Array([
+          87, 104, 101, 110, 32, 102,
+          105, 114, 105, 110, 103, 32,
+          97, 32, 114, 111, 99, 107,
+          101, 116, 44, 32, 121, 111,
+          117, 114, 32, 115, 104, 105,
+          112, 32, 110, 101, 101, 100,
+          115, 32, 116, 111, 32, 114,
+          101, 99, 111, 118, 101, 114,
+          32, 102, 111, 114, 32, 97,
+          32, 109, 111, 109, 101, 110,
+          116, 32, 98, 101, 102, 111,
+          114, 101, 32, 105, 116, 32,
+          99, 97, 110, 32, 115, 104,
+          111, 111, 116, 32, 97, 32,
+          110, 101, 119, 32, 114, 111,
+          99, 107, 101, 116, 46, 32,
+          73, 116, 39, 115, 32, 109,
+          111, 114, 101, 32, 101, 102,
+          102, 105, 99, 105, 101, 110,
+          116, 32, 116, 111, 32, 102,
+          105, 114, 101, 32, 97, 116,
+          32, 116, 104, 105, 115, 32,
+          114, 121, 116, 104, 109, 32,
+          116, 104, 97, 110, 32, 116,
+          111, 32, 115, 112, 97, 109,
+          32, 102, 105, 114, 105, 110,
+          103, 32, 114, 111, 99, 107,
+          101, 116, 115, 46,
+        ]),
+        new Uint8Array([
+          84, 104, 97, 116, 39, 115,
+          32, 97, 108, 108, 32, 111,
+          102, 32, 116, 104, 101, 32,
+          116, 105, 112, 115, 46, 32,
+          84, 104, 97, 110, 107, 115,
+          32, 102, 111, 114, 32, 97,
+          110, 115, 119, 101, 114, 105,
+          110, 103, 32, 97, 108, 108,
+          32, 116, 104, 101, 32, 113,
+          117, 101, 115, 116, 105, 111,
+          110, 115, 33,
+        ]),
+      ];
       const getHintAnswers = () => {
         try {
           const parsed = JSON.parse(localStorage.getItem("hint-answers") ?? "");
@@ -601,31 +840,54 @@
       const hintAnswerElements = document.getElementsByClassName("hint-answers");
       const hintAnswerParagraph = hintAnswerElements.item(0);
       const hintAnswerList = hintAnswerElements.item(1);
+      const revealedHintsElements = document.getElementsByClassName("revealed-hints");
+      const revealedHintsParagraph = revealedHintsElements.item(0);
+      const revealedHintsList = revealedHintsElements.item(1);
       const updateHintUi = () => {
         if (hintQuestionElement) {
-          hintQuestionElement.innerText = hintQuestions[hintKey];
+          if (hintKey) {
+            hintQuestionElement.innerText = hintQuestions[hintKey];
+          } else {
+            hintQuestionElement.style.display = "none";
+            const formElement = document.getElementsByTagName("form").item(0);
+            if (formElement) {
+              formElement.style.display = "none";
+            }
+            const hintExplanationElement = document.getElementById("hint-explanation");
+            if (hintExplanationElement) {
+              hintExplanationElement.style.display = "none";
+            }
+          }
         }
-        if (hintAnswerParagraph && hintAnswerList) {
+        if (hintAnswerParagraph && hintAnswerList && revealedHintsParagraph && revealedHintsParagraph) {
           const hintAnswers = getHintAnswers();
           const entries = Object.entries(hintAnswers);
           if (entries.length > 0) {
             hintAnswerParagraph.classList.remove("hidden");
             hintAnswerList.classList.remove("hidden");
+            revealedHintsParagraph.classList.remove("hidden");
+            revealedHintsList.classList.remove("hidden");
           }
-          const existingItems = hintAnswerList.childNodes.forEach((child) => {
+          [...hintAnswerList.childNodes].forEach((child) => {
             hintAnswerList.removeChild(child);
           });
-          entries.forEach(([key, value]) => {
-            const newItem = document.createElement("li");
+          [...revealedHintsList.childNodes].forEach((child) => {
+            revealedHintsList.removeChild(child);
+          });
+          entries.forEach(([key, value], index) => {
+            const newHistoryItem = document.createElement("li");
             const header = document.createElement("P");
             const body = document.createElement("P");
             header.innerText = hintQuestions[key];
             body.innerText = value;
             header.classList.add("hint-history-question");
             body.classList.add("hint-history-answer");
-            newItem.appendChild(header);
-            newItem.appendChild(body);
-            hintAnswerList.appendChild(newItem);
+            newHistoryItem.appendChild(header);
+            newHistoryItem.appendChild(body);
+            hintAnswerList.appendChild(newHistoryItem);
+            const newRevealedItem = document.createElement("li");
+            newRevealedItem.innerText = new TextDecoder().decode(hintSecret[index]);
+            revealedHintsList.appendChild(newRevealedItem);
           });
         }
       };
@@ -638,6 +900,9 @@
           hintFormElement.reset();
           pickNewHintKey();
           updateHintUi();
+          if (revealedHintsParagraph) {
+            revealedHintsParagraph.scrollIntoView({ behavior: "smooth", block: "nearest" })
+          }
         });
       }
       document.getElementById("reset-hint-question").addEventListener("click", () => {
